@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { refreshTokens } from './redux/auth'
+
+import Users from './pages/users'
+import Login from './pages/login';
+
+class App extends Component {
+
+  componentDidMount = () => this.props.refreshTokens()
+
+  render() {
+    const { loggedIn } = this.props
+    return (
+      <div className="App">
+        <Router>
+          <Switch>
+            <Route
+              path="/login"
+              render={props => loggedIn ? <Redirect to={{ pathname: '/' }} /> : <Login {...props} />}
+            />
+            <Route
+              path="/"
+              render={props => !loggedIn ? <Redirect to={{ pathname: '/login' }} /> : <Users {...props} />}
+            />
+          </Switch>
+        </Router>
+      </div>
+    );
+  }
+}
+  
+const mapStateToProps = state => ({
+  loggedIn: state.login.logIn
+})
+
+const mapDispatchToProps = {
+  refreshTokens
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);
